@@ -1,5 +1,14 @@
 site_name: kenon
 site_description: Semantic and co-occurrence graphs for midsized texts
+site_url: https://kenon.readthedocs.io
+repo_url: https://github.com/crow-intelligence/kenon
+repo_name: crow-intelligence/kenon
+
+extra:
+  social:
+    - icon: fontawesome/solid/globe
+      link: https://crow-intelligence.github.io/
+      name: Crow Intelligence
 
 theme:
   name: material

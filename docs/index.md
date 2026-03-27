@@ -16,3 +16,7 @@ No neural models or external training data required.
 - [Quickstart](quickstart.md)
 - [API Reference](api/tokenizer.md)
 - [Examples](examples/news_article_analysis.md)
+
+---
+
+Made by [Crow Intelligence](https://crow-intelligence.github.io/)

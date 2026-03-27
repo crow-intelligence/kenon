@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/crow-intelligence/kenon"
+Homepage = "https://crow-intelligence.github.io/"
 Repository = "https://github.com/crow-intelligence/kenon"
 Documentation = "https://kenon.readthedocs.io"
 
