@@ -48,6 +48,10 @@ print(f"Backbone: {backbone.number_of_nodes()} nodes, {backbone.number_of_edges(
 
 See the `docs/` directory for full API reference and examples.
 
+## Made by
+
+[Crow Intelligence](https://crow-intelligence.github.io/)
+
 ## License
 
 MIT

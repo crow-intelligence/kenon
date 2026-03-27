@@ -4,10 +4,23 @@ version = "0.1.0"
 description = "Semantic and co-occurrence graphs for midsized texts"
 readme = "README.md"
 authors = [
-    { name = "Zoltan Varju", email = "zoltan.varju@gmail.com" }
+    { name = "Zoltan Varju", email = "zoltan.varju@crowintelligence.org" },
+    { name = "Orsolya Putz", email = "orsolya.putz@crowintelligence.org" },
 ]
 requires-python = ">=3.11"
 license = { text = "MIT" }
+keywords = ["nlp", "semantic-graphs", "co-occurrence", "text-analysis", "computational-humanities"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+]
 dependencies = [
     "spacy>=3.7",
     "networkx>=3.3",
@@ -18,6 +31,11 @@ dependencies = [
     "pandas>=2.2",
     "chronowords>=0.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/crow-intelligence/kenon"
+Repository = "https://github.com/crow-intelligence/kenon"
+Documentation = "https://kenon.readthedocs.io"
 
 [project.optional-dependencies]
 dev = [
