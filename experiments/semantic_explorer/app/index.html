@@ -296,6 +296,7 @@ svg:active { cursor: grabbing; }
 
 /* Node glow for seed */
 .node-seed { filter: drop-shadow(0 0 8px rgba(232,201,126,0.6)); }
+.node-both { filter: drop-shadow(0 0 6px rgba(155,89,182,0.7)); }
 
 </style>
 </head>
@@ -445,7 +446,7 @@ function init() {
             return Math.max(40, 150 / (w * 1000 + 1));
         }))
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collide", d3.forceCollide().radius(d => nodeRadius(d) + 8))
+        .force("collide", d3.forceCollide().radius(d => nodeRadius(d) + 10))
         .alphaDecay(0.02)
         .on("tick", tick);
     simulation.stop();
@@ -768,10 +769,49 @@ function expandWord(word, isSeed) {
     updateStats();
 }
 
+function nodeDegree(d) {
+    // Degree in the full source graph (stable, not dependent on visible subgraph)
+    if (!sourceA) return 0;
+    const idxA = sourceA.vocab.indexOf(d.word);
+    let deg = idxA >= 0 ? (sourceA.degreeMap[idxA] || 0) : 0;
+    if (mode === "compare" && sourceB) {
+        const idxB = sourceB.vocab.indexOf(d.word);
+        deg = Math.max(deg, idxB >= 0 ? (sourceB.degreeMap[idxB] || 0) : 0);
+    }
+    return deg;
+}
+
+// Precompute max degree across the current source(s) for scaling
+function maxSourceDegree() {
+    if (!sourceA) return 1;
+    let mx = Math.max(...Object.values(sourceA.degreeMap));
+    if (mode === "compare" && sourceB) {
+        mx = Math.max(mx, ...Object.values(sourceB.degreeMap));
+    }
+    return mx || 1;
+}
+
+function isBothNode(d) {
+    return mode === "compare" && d.inA && d.inB && !d.isSeed;
+}
+
 function nodeRadius(d) {
-    if (d.isSeed) return 12;
-    if (d.expanded) return 9;
-    return 6;
+    const deg = nodeDegree(d);
+    const mx = maxSourceDegree();
+    const t = Math.sqrt(deg / mx);  // sqrt scale for area-proportional sizing
+    if (d.isSeed) return 10 + t * 10;          // 10–20
+    if (isBothNode(d)) return 8 + t * 10;      // 8–18 (boosted)
+    if (d.expanded) return 6 + t * 8;          // 6–14
+    return 4 + t * 6;                           // 4–10
+}
+
+function labelSize(d) {
+    const deg = nodeDegree(d);
+    const mx = maxSourceDegree();
+    const t = Math.sqrt(deg / mx);
+    if (d.isSeed) return 12 + t * 4;           // 12–16
+    if (isBothNode(d)) return 11 + t * 4;      // 11–15 (boosted)
+    return 9 + t * 4;                           // 9–13
 }
 
 function nodeColor(d) {
@@ -786,6 +826,8 @@ function nodeColor(d) {
 
 function nodeOpacity(d) {
     if (d.isSeed || d.expanded) return 1;
+    if (mode === "compare" && d.inA && d.inB) return 1;
+    if (mode === "compare") return 0.35;
     return 0.5;
 }
 
@@ -798,6 +840,26 @@ function edgeColor(e) {
     return COLOR_A;
 }
 
+function edgeWeightRange() {
+    if (visEdges.length === 0) return { min: 0, max: 1 };
+    const weights = visEdges.map(e => e.weight);
+    return { min: Math.min(...weights), max: Math.max(...weights) };
+}
+
+function edgeWidth(d) {
+    // sqrt-scaled width: 0.8 (weakest) to 5 (strongest)
+    const { min, max } = edgeWeightRange();
+    const t = max > min ? (d.weight - min) / (max - min) : 0.5;
+    return 0.8 + Math.sqrt(t) * 4.2;
+}
+
+function edgeOpacity(d) {
+    if (d.isCycle) return 1;
+    const { min, max } = edgeWeightRange();
+    const t = max > min ? (d.weight - min) / (max - min) : 0.5;
+    return 0.15 + t * 0.65;  // 0.15 (weakest) to 0.8 (strongest)
+}
+
 // ─── D3 rendering ───────────────────────────────────────────
 function updateGraph() {
     // Links
@@ -808,9 +870,9 @@ function updateGraph() {
     });
     linkSel.exit().remove();
     const linkEnter = linkSel.enter().append("line")
-        .attr("stroke-width", d => Math.max(0.5, d.weight * 300))
+        .attr("stroke-width", d => edgeWidth(d))
         .attr("stroke", edgeColor)
-        .attr("stroke-opacity", d => d.isCycle ? 1 : 0.3);
+        .attr("stroke-opacity", d => edgeOpacity(d));
 
     // Pulse animation for cycle edges
     linkEnter.filter(d => d.isCycle)
@@ -821,7 +883,7 @@ function updateGraph() {
     nodeSel.exit().remove();
 
     const nodeEnter = nodeSel.enter().append("g")
-        .attr("class", d => "node" + (d.isSeed ? " node-seed" : ""))
+        .attr("class", d => "node" + (d.isSeed ? " node-seed" : "") + (isBothNode(d) ? " node-both" : ""))
         .style("cursor", d => d.isDead || d.expanded ? "default" : "pointer")
         .on("click", (e, d) => {
             if (state !== "EXPLORING") return;
@@ -847,18 +909,28 @@ function updateGraph() {
         .attr("dy", d => -(nodeRadius(d) + 4))
         .attr("fill", "#e8e6e1")
         .attr("font-family", "'Courier Prime', monospace")
-        .attr("font-size", "10px")
+        .attr("font-size", d => labelSize(d) + "px")
         .attr("pointer-events", "none")
         .text(d => d.word);
 
-    // Update existing nodes (color/radius/cursor may change)
+    // Update existing edges (weight range may have changed)
+    const linkUpdate = linkSel.merge(linkEnter);
+    linkUpdate
+        .attr("stroke-width", d => edgeWidth(d))
+        .attr("stroke-opacity", d => edgeOpacity(d));
+
+    // Update existing nodes (color/radius/cursor/class may change)
     const nodeUpdate = nodeSel.merge(nodeEnter);
     nodeUpdate
+        .attr("class", d => "node" + (d.isSeed ? " node-seed" : "") + (isBothNode(d) ? " node-both" : ""))
         .style("cursor", d => d.isDead || d.expanded ? "default" : "pointer");
     nodeUpdate.select("circle")
         .attr("r", nodeRadius)
         .attr("fill", nodeColor)
         .attr("fill-opacity", nodeOpacity);
+    nodeUpdate.select("text")
+        .attr("dy", d => -(nodeRadius(d) + 4))
+        .attr("font-size", d => labelSize(d) + "px");
 
     // Update simulation
     simulation.nodes(visNodes);
@@ -899,41 +971,44 @@ function showTooltip(event, d) {
     const tip = document.getElementById("tooltip");
     let html = `<div class="word">${d.word}</div>`;
 
-    // Find edge weights from seed or last expanded
-    const parentEdges = visEdges.filter(e => {
-        const s = e.source.id || e.source;
-        const t = e.target.id || e.target;
-        return s === d.word || t === d.word;
-    });
-
-    if (parentEdges.length > 0) {
-        const maxEdge = parentEdges.reduce((a, b) => a.weight > b.weight ? a : b);
-        html += `<div class="detail">Max edge weight: ${maxEdge.weight.toFixed(5)}</div>`;
-    }
-
-    // Degree in visible graph
-    const visDegree = visEdges.filter(e => {
-        const s = e.source.id || e.source;
-        const t = e.target.id || e.target;
-        return s === d.word || t === d.word;
-    }).length;
-    html += `<div class="detail">Visible degree: ${visDegree}</div>`;
-
-    // Full degree in source
+    // Full degree in source(s)
     if (sourceA) {
         const idx = sourceA.vocab.indexOf(d.word);
         if (idx >= 0) {
-            html += `<div class="detail">Full degree (A): ${sourceA.degreeMap[idx] || 0}</div>`;
+            const label = mode === "compare" ? "Degree (A)" : "Degree";
+            html += `<div class="detail">${label}: ${sourceA.degreeMap[idx] || 0}</div>`;
         }
     }
     if (mode === "compare" && sourceB) {
         const idx = sourceB.vocab.indexOf(d.word);
         if (idx >= 0) {
-            html += `<div class="detail">Full degree (B): ${sourceB.degreeMap[idx] || 0}</div>`;
+            html += `<div class="detail">Degree (B): ${sourceB.degreeMap[idx] || 0}</div>`;
         }
     }
 
-    html += `<div class="detail">${d.expanded ? "Expanded" : "Click to expand"}</div>`;
+    // Connected edges sorted by weight (strongest first)
+    const connEdges = visEdges.filter(e => {
+        const s = e.source.id || e.source;
+        const t = e.target.id || e.target;
+        return s === d.word || t === d.word;
+    }).sort((a, b) => b.weight - a.weight);
+
+    if (connEdges.length > 0) {
+        html += `<div class="detail" style="margin-top:4px;color:#e8c97e;font-size:11px">Connections:</div>`;
+        const shown = connEdges.slice(0, 8);
+        for (const e of shown) {
+            const s = e.source.id || e.source;
+            const t = e.target.id || e.target;
+            const other = s === d.word ? t : s;
+            const bar = "█".repeat(Math.max(1, Math.round(e.weight * 1000)));
+            html += `<div class="detail">${other} <span style="color:#e8c97e;font-size:9px">${bar}</span> ${e.weight.toFixed(4)}</div>`;
+        }
+        if (connEdges.length > 8) {
+            html += `<div class="detail">+${connEdges.length - 8} more</div>`;
+        }
+    }
+
+    html += `<div class="detail" style="margin-top:4px">${d.expanded ? "Expanded" : "Click to expand"}</div>`;
 
     tip.innerHTML = html;
     tip.classList.add("visible");
