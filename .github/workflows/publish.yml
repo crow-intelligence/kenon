@@ -27,4 +27,4 @@ jobs:
           curl -X POST \
             -d "branches=main" \
             -d "token=${{ secrets.RTD_WEBHOOK_TOKEN }}" \
-            https://readthedocs.org/api/v2/webhook/kenon/0/
+            https://app.readthedocs.org/api/v2/webhook/kenon/322846/
