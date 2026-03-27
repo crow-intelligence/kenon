@@ -1,0 +1,67 @@
+[project]
+name = "kenon"
+version = "0.1.0"
+description = "Semantic and co-occurrence graphs for midsized texts"
+readme = "README.md"
+authors = [
+    { name = "Zoltan Varju", email = "zoltan.varju@gmail.com" }
+]
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "spacy>=3.7",
+    "networkx>=3.3",
+    "scikit-learn>=1.4",
+    "nltk>=3.8",
+    "numpy>=1.26",
+    "scipy>=1.13",
+    "pandas>=2.2",
+    "chronowords>=0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov",
+    "hypothesis>=6.100",
+    "ruff>=0.4",
+    "ty",
+    # experiment deps -- not part of the published package
+    "datasets>=2.18",
+    "huggingface-hub>=0.22",
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+    "jupyter>=1.0",
+    "ipykernel>=6.29",
+    "tqdm>=4.66",
+]
+docs = [
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.22,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "ANN", "D"]
+ignore = ["D105", "D107"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D100", "D102", "D103", "D104", "ANN"]
+"examples/**" = ["D100", "ANN"]
+"experiments/**" = ["D100", "D103", "ANN"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules --tb=short"
+testpaths = ["src", "tests"]
+
+[tool.ty]

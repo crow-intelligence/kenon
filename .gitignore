@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Experiment data (large, generated)
+experiments/google_and_the_mind/data/
+experiments/google_and_the_mind/graphs/
+experiments/google_and_the_mind/results/
+
+experiments/semantic_explorer/data/raw/
+experiments/semantic_explorer/data/graphs/
+
+# Test artifacts
+.coverage
+.hypothesis/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/

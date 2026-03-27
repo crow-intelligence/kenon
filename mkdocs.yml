@@ -1,0 +1,29 @@
+site_name: kenon
+site_description: Semantic and co-occurrence graphs for midsized texts
+
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+
+nav:
+  - Getting Started:
+      - index.md
+      - quickstart.md
+  - API Reference:
+      - api/tokenizer.md
+      - api/embeddings.md
+      - api/cooccurrence.md
+      - api/graphs.md
+      - api/backbone.md
+  - Examples:
+      - examples/news_article_analysis.md
+      - examples/comparing_two_texts.md
+      - examples/multilingual_analysis.md
