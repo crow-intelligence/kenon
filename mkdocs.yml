@@ -7,11 +7,13 @@ repo_name: crow-intelligence/kenon
 extra:
   social:
     - icon: fontawesome/solid/globe
-      link: https://crow-intelligence.github.io/
+      link: https://crowintelligence.org/
       name: Crow Intelligence
 
 theme:
   name: material
+  logo: assets/kenon.svg
+  favicon: assets/kenon.svg
 
 plugins:
   - search

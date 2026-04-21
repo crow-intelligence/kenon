@@ -123,3 +123,37 @@ class TestEmbedderProperties:
         emb.fit(corpus)
         vocab2 = emb.vocabulary
         assert vocab1 == vocab2
+
+    @settings(max_examples=15, deadline=10000)
+    @given(small_corpus)
+    def test_count_fit_transform_matches_fit_then_transform(
+        self, corpus: list[str]
+    ) -> None:
+        emb1 = CountVectorizerEmbedder()
+        mat_a = emb1.fit_transform(corpus)
+        emb2 = CountVectorizerEmbedder()
+        emb2.fit(corpus)
+        mat_b = emb2.transform(corpus)
+        np.testing.assert_allclose(mat_a, mat_b)
+
+    @settings(max_examples=15, deadline=10000)
+    @given(small_corpus)
+    def test_tfidf_fit_transform_matches_fit_then_transform(
+        self, corpus: list[str]
+    ) -> None:
+        emb1 = TfidfEmbedder()
+        mat_a = emb1.fit_transform(corpus)
+        emb2 = TfidfEmbedder()
+        emb2.fit(corpus)
+        mat_b = emb2.transform(corpus)
+        np.testing.assert_allclose(mat_a, mat_b)
+
+    @settings(max_examples=15, deadline=10000)
+    @given(small_corpus)
+    def test_tfidf_vocabulary_stable_after_refit(self, corpus: list[str]) -> None:
+        emb = TfidfEmbedder()
+        emb.fit(corpus)
+        vocab1 = emb.vocabulary
+        emb.fit(corpus)
+        vocab2 = emb.vocabulary
+        assert vocab1 == vocab2

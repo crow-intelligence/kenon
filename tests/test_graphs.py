@@ -6,6 +6,7 @@ import networkx as nx
 import numpy as np
 import pytest
 from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from kenon.embeddings import CountVectorizerEmbedder, TfidfEmbedder
 from kenon.graphs import (
@@ -14,7 +15,7 @@ from kenon.graphs import (
     load_graph,
     save_graph,
 )
-from tests.strategies import similarity_threshold, small_corpus
+from tests.strategies import similarity_threshold, small_corpus, weighted_graph
 
 
 class TestBuildSemanticGraph:
@@ -142,3 +143,36 @@ class TestGraphProperties:
         emb = CountVectorizerEmbedder()
         g = build_semantic_graph(emb, corpus, similarity_threshold=1.0)
         assert g.number_of_edges() == 0
+
+    @settings(max_examples=10, deadline=10000)
+    @given(small_corpus)
+    def test_cosine_matrix_symmetric(self, corpus: list[str]) -> None:
+        emb = CountVectorizerEmbedder()
+        sim, _ = cosine_similarity_matrix(emb, corpus)
+        np.testing.assert_allclose(sim, sim.T, atol=1e-10)
+
+    @settings(max_examples=10, deadline=10000)
+    @given(small_corpus)
+    def test_higher_threshold_fewer_edges(self, corpus: list[str]) -> None:
+        emb = CountVectorizerEmbedder()
+        g_low = build_semantic_graph(emb, corpus, similarity_threshold=0.1)
+        g_high = build_semantic_graph(emb, corpus, similarity_threshold=0.9)
+        assert g_high.number_of_edges() <= g_low.number_of_edges()
+
+
+class TestSaveLoadRoundtrip:
+    """Property-based round-trip tests for save_graph/load_graph."""
+
+    @settings(max_examples=30, deadline=5000)
+    @given(weighted_graph(), st.sampled_from(["graphml", "gml", "pickle"]))
+    def test_roundtrip_preserves_structure(self, g: nx.Graph, fmt: str) -> None:
+        suffix = f".{fmt}" if fmt != "pickle" else ".pkl"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
+            save_graph(g, f.name, fmt=fmt)
+            loaded = load_graph(f.name, fmt=fmt)
+        assert set(loaded.nodes()) == set(g.nodes())
+        assert {frozenset((u, v)) for u, v in loaded.edges()} == {
+            frozenset((u, v)) for u, v in g.edges()
+        }
+        for u, v, data in g.edges(data=True):
+            assert abs(loaded[u][v]["weight"] - data["weight"]) < 1e-6

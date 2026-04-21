@@ -145,3 +145,30 @@ class TestBackboneProperties:
         backbone = extract_backbone(g, min_alpha_ptile=0.3, min_degree=min_deg)
         for node in backbone.nodes():
             assert backbone.degree(node) >= min_deg
+
+    @settings(max_examples=30, deadline=5000)
+    @given(st.floats(min_value=0.0, max_value=1.0, allow_nan=False))
+    def test_nodes_subset_of_original(self, ptile: float) -> None:
+        g = _make_weighted_graph()
+        backbone = extract_backbone(g, min_alpha_ptile=ptile)
+        assert set(backbone.nodes()) <= set(g.nodes())
+
+    @settings(max_examples=30, deadline=5000)
+    @given(st.floats(min_value=0.0, max_value=1.0, allow_nan=False))
+    def test_edges_subset_of_original(self, ptile: float) -> None:
+        g = _make_weighted_graph()
+        backbone = extract_backbone(g, min_alpha_ptile=ptile)
+        original_edges = {frozenset((u, v)) for u, v in g.edges()}
+        for u, v in backbone.edges():
+            assert frozenset((u, v)) in original_edges
+
+    @settings(max_examples=200)
+    @given(
+        st.floats(min_value=0.0, max_value=0.9999, allow_nan=False),
+        st.floats(min_value=2.0, max_value=1000.0, allow_nan=False),
+    )
+    def test_significance_in_unit_interval(
+        self, norm_weight: float, degree: float
+    ) -> None:
+        alpha = get_disparity_significance(norm_weight, degree)
+        assert 0.0 <= alpha <= 1.0

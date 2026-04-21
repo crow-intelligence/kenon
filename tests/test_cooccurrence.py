@@ -109,3 +109,23 @@ class TestCooccurrenceProperties:
     def test_invalid_window_raises(self, window: int) -> None:
         with pytest.raises(ValueError):
             build_cooccurrence_graph(["a", "b", "c"], window=window)
+
+    @settings(max_examples=50, deadline=5000)
+    @given(token_list)
+    def test_nodes_subset_of_tokens(self, tokens: list[str]) -> None:
+        g = build_cooccurrence_graph(tokens, window=2)
+        assert set(g.nodes()) <= set(tokens)
+
+    @settings(max_examples=50, deadline=5000)
+    @given(token_list)
+    def test_graph_is_symmetric(self, tokens: list[str]) -> None:
+        g = build_cooccurrence_graph(tokens, window=2)
+        for u, v, data in g.edges(data=True):
+            assert g[u][v]["weight"] == g[v][u]["weight"]
+
+    @settings(max_examples=30, deadline=5000)
+    @given(token_list, st.floats(min_value=0.5, max_value=5.0, allow_nan=False))
+    def test_min_weight_respected(self, tokens: list[str], min_w: float) -> None:
+        g = build_cooccurrence_graph(tokens, window=2, min_weight=min_w)
+        for _u, _v, data in g.edges(data=True):
+            assert data["weight"] >= min_w

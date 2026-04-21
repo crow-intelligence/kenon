@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/crow-intelligence/kenon/main/img/kenon.svg" alt="kenon logo" width="400">
+</p>
+
 # kenon
 
 Semantic and co-occurrence graphs for midsized texts. Kenon builds weighted
@@ -50,7 +54,7 @@ See the `docs/` directory for full API reference and examples.
 
 ## Made by
 
-[Crow Intelligence](https://crow-intelligence.github.io/)
+Kenon is made by [Crow Intelligence](https://crowintelligence.org/).
 
 ## License
 

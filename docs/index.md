@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/kenon.svg" alt="kenon logo" width="400">
+</p>
+
 # kenon
 
 Semantic and co-occurrence graphs for midsized texts.
@@ -19,4 +23,4 @@ No neural models or external training data required.
 
 ---
 
-Made by [Crow Intelligence](https://crow-intelligence.github.io/)
+Made by [Crow Intelligence](https://crowintelligence.org/)
