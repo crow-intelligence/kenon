@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Add project logo to README, mkdocs site, and PyPI page
+- Update Crow Intelligence URL to crowintelligence.org across README, docs, and PyPI metadata
+- Expand Hypothesis property-based tests (graph save/load roundtrip, disparity significance bounds, embedder fit_transform consistency, backbone subset invariants, cooccurrence symmetry)
+
 ## 0.1.0
 
 - Initial release
