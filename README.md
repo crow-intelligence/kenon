@@ -50,7 +50,28 @@ print(f"Backbone: {backbone.number_of_nodes()} nodes, {backbone.number_of_edges(
 
 ## Documentation
 
-See the `docs/` directory for full API reference and examples.
+Full documentation — quickstart, the word-association tutorial, troubleshooting,
+and the complete API reference — is at
+[kenon.readthedocs.io](https://kenon.readthedocs.io). The sources live in `docs/`.
+
+## Roadmap
+
+Planned for the next iteration. The robustness items are analysed in detail in
+[`PRE-MORTEM.md`](PRE-MORTEM.md).
+
+**Robustness / API decisions**
+
+- [ ] Warn or document when `build_semantic_graph` runs on too few documents — word-similarity is degenerate on small corpora (each word vector's dimension is the document count).
+- [ ] Avoid the dense `.toarray()` materialisation in the sklearn embedders (out-of-memory risk on large corpora).
+- [ ] Make `transform()` raise the documented `RuntimeError` when called before `fit()` (it currently surfaces sklearn's `NotFittedError`).
+- [ ] `build_semantic_graph(k_neighbors=...)`: reuse the already-fitted embedder and warn instead of silently degrading to a threshold-only graph.
+- [ ] Guard `detect_collocations` against NLTK crashes on degenerate corpora — `chi_sq` raises `ZeroDivisionError` and `likelihood` a math-domain `ValueError` on all-identical tokens; only `pmi` is robust.
+- [ ] Wrap the unsupported-language error in `get_stopwords` and document its one-time NLTK download.
+
+**Proposed features**
+
+- [ ] `kenon.paths` — a first-class concept-to-concept pathfinding helper (currently demonstrated via networkx in the tutorial).
+- [ ] Compare a text-derived network against human association norms — [Nelson norms](http://w3.usf.edu/FreeAssociation/) / [Small World of Words](https://smallworldofwords.org/) (needs external datasets).
 
 ## Made by
 
