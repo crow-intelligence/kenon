@@ -49,6 +49,27 @@ class TestBuildCooccurrenceGraph:
         g = build_cooccurrence_graph(["hello"], window=1)
         assert g.number_of_edges() == 0
 
+    def test_exact_structure_and_weights(self) -> None:
+        # ["a", "b", "c"] with window=1: each adjacent pair co-occurs twice
+        # (once from each direction), giving normalised weights of 0.5 each, and
+        # NO a-c edge (they are 2 apart). Pins the skip-gram window arithmetic.
+        g = build_cooccurrence_graph(["a", "b", "c"], window=1)
+        assert set(g.nodes()) == {"a", "b", "c"}
+        assert g["a"]["b"]["weight"] == pytest.approx(0.5)
+        assert g["b"]["c"]["weight"] == pytest.approx(0.5)
+        assert not g.has_edge("a", "c")
+
+    def test_min_weight_is_inclusive(self) -> None:
+        # Both edges have weight exactly 0.5; min_weight=0.5 must keep them (>=).
+        g = build_cooccurrence_graph(["a", "b", "c"], window=1, min_weight=0.5)
+        assert g.number_of_edges() == 2
+
+    def test_default_window_is_two(self) -> None:
+        # Default window is 2: tokens 2 apart co-occur, tokens 3 apart do not.
+        g = build_cooccurrence_graph(["a", "b", "c", "d"])
+        assert g.has_edge("a", "c")
+        assert not g.has_edge("a", "d")
+
 
 class TestDetectCollocations:
     """Unit tests for detect_collocations."""
@@ -129,3 +150,51 @@ class TestCooccurrenceProperties:
         g = build_cooccurrence_graph(tokens, window=2, min_weight=min_w)
         for _u, _v, data in g.edges(data=True):
             assert data["weight"] >= min_w
+
+    @settings(max_examples=50, deadline=5000)
+    @given(token_list, st.integers(min_value=1, max_value=5))
+    def test_weights_sum_to_one(self, tokens: list[str], window: int) -> None:
+        # Edge weights are normalised co-occurrence frequencies: with no
+        # min_weight cut, they must sum to 1.0 over the whole graph.
+        g = build_cooccurrence_graph(tokens, window=window, min_weight=0.0)
+        if g.number_of_edges() == 0:
+            return
+        total = sum(data["weight"] for _u, _v, data in g.edges(data=True))
+        assert abs(total - 1.0) < 1e-9
+
+
+# Tokens drawn from a tiny alphabet so n-grams actually repeat and collocations
+# can be found (exercising the scoring path, not just the empty-result path).
+_repeating_tokens = st.lists(
+    st.sampled_from(["a", "b", "c", "d", "e", "f"]),
+    min_size=12,
+    max_size=80,
+)
+
+
+class TestCollocationProperties:
+    """Property-based tests for detect_collocations invariants.
+
+    Uses the ``pmi`` metric only: the structural invariants checked here are
+    metric-independent, and NLTK's ``chi_sq`` / ``likelihood`` scorers raise
+    (ZeroDivisionError / math-domain ValueError) on degenerate corpora such as
+    all-identical tokens, which detect_collocations does not currently guard.
+    """
+
+    @settings(max_examples=60, deadline=5000)
+    @given(
+        _repeating_tokens,
+        st.sampled_from([2, 3]),
+        st.integers(min_value=1, max_value=10),
+    )
+    def test_collocation_invariants(
+        self, tokens: list[str], n: int, top_n: int
+    ) -> None:
+        result = detect_collocations(tokens, n=n, metric="pmi", top_n=top_n, min_freq=2)
+        contiguous_ngrams = {
+            tuple(tokens[i : i + n]) for i in range(len(tokens) - n + 1)
+        }
+        # At most top_n results, each an n-tuple drawn from the text's n-grams.
+        assert len(result) <= top_n
+        assert all(len(t) == n for t in result)
+        assert all(t in contiguous_ngrams for t in result)

@@ -3,6 +3,7 @@
 import copy
 
 import networkx as nx
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -12,6 +13,7 @@ from kenon.backbone import (
     extract_backbone,
     get_disparity_significance,
 )
+from tests.strategies import weighted_graph
 
 
 def _make_weighted_graph(n_nodes: int = 6) -> nx.Graph:
@@ -44,6 +46,12 @@ class TestDisparityIntegral:
         v2 = disparity_integral(0.7, 4.0)
         assert v1 != v2
 
+    def test_exact_value(self) -> None:
+        # ((1-0.5)^3) / ((3-1) * (0.5-1)) = 0.125 / (2 * -0.5) = -0.125
+        assert disparity_integral(0.5, 3.0) == pytest.approx(-0.125)
+        # ((1-0)^3) / ((3-1) * (0-1)) = 1 / -2 = -0.5
+        assert disparity_integral(0.0, 3.0) == pytest.approx(-0.5)
+
 
 class TestGetDisparitySignificance:
     """Unit tests for get_disparity_significance."""
@@ -59,6 +67,10 @@ class TestGetDisparitySignificance:
     def test_in_range(self) -> None:
         alpha = get_disparity_significance(0.5, 3.0)
         assert 0.0 <= alpha <= 1.0
+
+    def test_exact_value(self) -> None:
+        # 1 - (3-1) * (I(0.5,3) - I(0,3)) = 1 - 2 * (-0.125 - -0.5) = 1 - 0.75 = 0.25
+        assert get_disparity_significance(0.5, 3.0) == pytest.approx(0.25)
 
 
 class TestApplyDisparityFilter:
@@ -172,3 +184,50 @@ class TestBackboneProperties:
     ) -> None:
         alpha = get_disparity_significance(norm_weight, degree)
         assert 0.0 <= alpha <= 1.0
+
+
+class TestDisparityMath:
+    """Property-based tests asserting the documented disparity-filter contracts."""
+
+    def test_zero_norm_weight_is_maximally_insignificant(self) -> None:
+        # A normalised weight of 0 carries no significance: alpha is exactly 1.0.
+        for degree in (2.0, 3.0, 10.0, 100.0, 1000.0):
+            assert get_disparity_significance(0.0, degree) == 1.0
+
+    @settings(max_examples=200)
+    @given(
+        st.floats(min_value=0.0, max_value=0.9999, allow_nan=False),
+        st.floats(min_value=0.0, max_value=0.9999, allow_nan=False),
+        st.floats(min_value=2.0, max_value=1000.0, allow_nan=False),
+    )
+    def test_significance_monotonic_in_norm_weight(
+        self, n1: float, n2: float, degree: float
+    ) -> None:
+        # A stronger normalised edge is MORE significant, i.e. has a LOWER alpha.
+        lo, hi = sorted((n1, n2))
+        assert get_disparity_significance(lo, degree) >= (
+            get_disparity_significance(hi, degree) - 1e-12
+        )
+
+    @settings(max_examples=50, deadline=5000)
+    @given(weighted_graph())
+    def test_strength_equals_incident_weight_sum(self, g: nx.Graph) -> None:
+        if g.number_of_edges() == 0:
+            assert apply_disparity_filter(g) == []
+            return
+        apply_disparity_filter(g)
+        for node in g.nodes():
+            incident = sum(d["weight"] for _, _, d in g.edges(node, data=True))
+            assert abs(g.nodes[node]["strength"] - incident) < 1e-9
+
+    @settings(max_examples=50, deadline=5000)
+    @given(weighted_graph())
+    def test_alpha_ptile_and_norm_weight_in_unit_interval(self, g: nx.Graph) -> None:
+        alphas = apply_disparity_filter(g)
+        for a in alphas:
+            assert 0.0 <= a <= 1.0
+        for _u, _v, data in g.edges(data=True):
+            assert 0.0 <= data["alpha"] <= 1.0
+            assert 0.0 <= data["alpha_ptile"] <= 1.0
+            # Contract: every edge gets a numeric norm_weight (weight / strength).
+            assert 0.0 <= data["norm_weight"] <= 1.0
