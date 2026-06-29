@@ -130,7 +130,7 @@ class Tokenizer:
         nlp.max_length = max(nlp.max_length, max(len(c) for c in chunks) + 100)
         return [nlp(chunk) for chunk in chunks]
 
-    def _token_text(self, token: spacy.tokens.Token) -> str:  # type: ignore[name-defined]
+    def _token_text(self, token: spacy.tokens.Token) -> str:
         """Extract text from a spaCy token, applying lemmatisation and lowering."""
         text = token.lemma_ if self._lemmatize else token.text
         if self._lower:

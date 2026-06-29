@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import networkx as nx
 import numpy as np
+from numpy.typing import NDArray
 from sklearn.metrics.pairwise import cosine_similarity as sklearn_cosine_similarity
 from sklearn.neighbors import NearestNeighbors
 
@@ -79,7 +80,7 @@ def build_semantic_graph(
     stopset = stopwords or frozenset()
 
     # If k_neighbors is set, build kNN mask
-    knn_mask: np.ndarray | None = None
+    knn_mask: NDArray[np.bool_] | None = None
     if k_neighbors is not None and len(vocab) > 0:
         # Build word vectors from the embedder
         embedder.fit(corpus)
