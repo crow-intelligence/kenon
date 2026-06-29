@@ -24,5 +24,9 @@ experiments/semantic_explorer/data/graphs/
 .coverage
 .hypothesis/
 
+# Mutation testing (mutmut) working copy and cache
+mutants/
+.mutmut-cache
+
 # Jupyter checkpoints
 .ipynb_checkpoints/

@@ -80,6 +80,19 @@ class TestCosineSimilarityMatrix:
         sim, _ = cosine_similarity_matrix(emb, sample_corpus)
         np.testing.assert_allclose(sim, sim.T, atol=1e-10)
 
+    def test_diagonal_is_one(self, sample_corpus: list[str]) -> None:
+        # Contract: self-similarity is 1.0 on the diagonal.
+        emb = TfidfEmbedder()
+        sim, vocab = cosine_similarity_matrix(emb, sample_corpus)
+        np.testing.assert_allclose(np.diag(sim), np.ones(len(vocab)), atol=1e-9)
+
+    def test_values_in_unit_range(self, sample_corpus: list[str]) -> None:
+        # Contract: all cosine values lie in [-1, 1].
+        emb = TfidfEmbedder()
+        sim, _ = cosine_similarity_matrix(emb, sample_corpus)
+        assert sim.min() >= -1.0 - 1e-9
+        assert sim.max() <= 1.0 + 1e-9
+
 
 class TestSaveLoadGraph:
     """Unit tests for save_graph and load_graph."""
@@ -150,6 +163,15 @@ class TestGraphProperties:
         emb = CountVectorizerEmbedder()
         sim, _ = cosine_similarity_matrix(emb, corpus)
         np.testing.assert_allclose(sim, sim.T, atol=1e-10)
+
+    @settings(max_examples=10, deadline=10000)
+    @given(small_corpus)
+    def test_cosine_matrix_diagonal_is_one(self, corpus: list[str]) -> None:
+        emb = CountVectorizerEmbedder()
+        sim, vocab = cosine_similarity_matrix(emb, corpus)
+        if len(vocab) == 0:
+            return
+        np.testing.assert_allclose(np.diag(sim), np.ones(len(vocab)), atol=1e-9)
 
     @settings(max_examples=10, deadline=10000)
     @given(small_corpus)
