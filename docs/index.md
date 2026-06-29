@@ -17,9 +17,11 @@ No neural models or external training data required.
 
 ## Quick links
 
-- [Quickstart](quickstart.md)
-- [API Reference](api/tokenizer.md)
-- [Examples](examples/news_article_analysis.md)
+- [Quickstart](quickstart.md) — clean install to backbone graph
+- [Tutorial: word-association graphs](tutorials/word_association_graph.md) — find paths between concepts
+- [Examples](examples/news_article_analysis.md) — full, runnable scripts
+- [Troubleshooting](troubleshooting.md) — common errors and fixes
+- [API Reference](api/tokenizer.md) — every public function and its contract
 
 ---
 

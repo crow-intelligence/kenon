@@ -4,6 +4,10 @@ site_url: https://kenon.readthedocs.io
 repo_url: https://github.com/crow-intelligence/kenon
 repo_name: crow-intelligence/kenon
 
+# Fail the build on any warning (broken links, missing autodoc targets, dead
+# snippet paths). Keeps the published docs honest.
+strict: true
+
 extra:
   social:
     - icon: fontawesome/solid/globe
@@ -14,6 +18,9 @@ theme:
   name: material
   logo: assets/kenon.svg
   favicon: assets/kenon.svg
+  features:
+    - navigation.sections
+    - content.code.copy
 
 plugins:
   - search
@@ -24,17 +31,36 @@ plugins:
             show_source: true
             show_root_heading: true
 
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  # Pull the verified example scripts into the docs so they never drift.
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+
 nav:
   - Getting Started:
       - index.md
       - quickstart.md
-  - API Reference:
-      - api/tokenizer.md
-      - api/embeddings.md
-      - api/cooccurrence.md
-      - api/graphs.md
-      - api/backbone.md
+  - Tutorials:
+      - tutorials/word_association_graph.md
   - Examples:
       - examples/news_article_analysis.md
       - examples/comparing_two_texts.md
       - examples/multilingual_analysis.md
+  - Troubleshooting: troubleshooting.md
+  - API Reference:
+      - api/tokenizer.md
+      - api/stopwords.md
+      - api/embeddings.md
+      - api/cooccurrence.md
+      - api/graphs.md
+      - api/backbone.md

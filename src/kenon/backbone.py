@@ -31,7 +31,7 @@ def disparity_integral(x: float, k: float) -> float:
         - ``x`` must not equal 1.0 (division by zero).
         - ``k`` must not equal 1.0 (division by zero).
 
-    Example:
+    Examples:
         >>> abs(disparity_integral(0.5, 3.0) - disparity_integral(0.0, 3.0)) > 0
         True
     """
@@ -52,7 +52,7 @@ def get_disparity_significance(norm_weight: float, degree: float) -> float:
         - If ``degree`` <= 1, returns 0.0.
         - Result is clipped to [0, 1].
 
-    Example:
+    Examples:
         >>> alpha = get_disparity_significance(0.5, 3.0)
         >>> 0.0 <= alpha <= 1.0
         True
@@ -86,7 +86,7 @@ def apply_disparity_filter(graph: SemanticGraph) -> list[float]:
         - Every edge gets ``norm_weight``, ``alpha``, and ``alpha_ptile`` attributes.
         - Every node gets a ``strength`` attribute.
 
-    Example:
+    Examples:
         >>> import networkx as nx
         >>> g = nx.Graph()
         >>> g.add_edge("a", "b", weight=0.8)
@@ -162,7 +162,7 @@ def extract_backbone(
         - Result has <= nodes and <= edges compared to the original.
         - All remaining nodes satisfy ``degree >= min_degree``.
 
-    Example:
+    Examples:
         >>> import networkx as nx
         >>> g = nx.path_graph(5)
         >>> for u, v in g.edges():

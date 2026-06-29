@@ -41,7 +41,7 @@ class Tokenizer:
         - All methods accept ``str`` inputs only, never file paths.
         - Pure whitespace and punctuation tokens are excluded by default.
 
-    Example:
+    Examples:
         >>> t = Tokenizer("en_core_web_sm")
         >>> sents = t.sentencize("The cat sat. The dog ran.")
         >>> len(sents)
@@ -150,7 +150,7 @@ class Tokenizer:
             - Never returns empty strings in the output list.
             - Sentence boundaries are determined by spaCy's sentence segmenter.
 
-        Example:
+        Examples:
             >>> t = Tokenizer("en_core_web_sm")
             >>> sents = t.sentencize("Hello world. Goodbye world.")
             >>> len(sents) == 2
@@ -179,7 +179,7 @@ class Tokenizer:
             - Whitespace-only tokens are always excluded.
             - Punctuation tokens excluded unless ``keep_punct=True``.
 
-        Example:
+        Examples:
             >>> t = Tokenizer("en_core_web_sm", lemmatize=True)
             >>> doc = t.tokenize("The cats were running.")
             >>> "cat" in doc[0]
@@ -217,7 +217,7 @@ class Tokenizer:
             - All returned tokens are substrings of the original text
               (possibly lowercased or lemmatised).
 
-        Example:
+        Examples:
             >>> t = Tokenizer("en_core_web_sm")
             >>> tokens = t.flat_tokens("The cat sat on the mat.")
             >>> "cat" in tokens

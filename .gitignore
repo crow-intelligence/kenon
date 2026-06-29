@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+# Built documentation (mkdocs output)
+site/
+
 # Experiment data (large, generated)
 experiments/google_and_the_mind/data/
 experiments/google_and_the_mind/graphs/
