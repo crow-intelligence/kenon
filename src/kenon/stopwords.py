@@ -45,7 +45,7 @@ def get_stopwords(
         - ``extra`` words are always present in the result.
         - NLTK data is auto-downloaded if missing.
 
-    Example:
+    Examples:
         >>> sw = get_stopwords("english")
         >>> "the" in sw
         True

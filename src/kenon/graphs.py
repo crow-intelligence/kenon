@@ -60,7 +60,7 @@ def build_semantic_graph(
         - All edge weights are in [0, 1].
         - Node labels are vocabulary token strings.
 
-    Example:
+    Examples:
         >>> from kenon.embeddings import TfidfEmbedder
         >>> emb = TfidfEmbedder()
         >>> corpus = ["cat mat sat", "dog ran fast", "cat ran fast"] * 5
@@ -133,7 +133,7 @@ def cosine_similarity_matrix(
         - Matrix is symmetric.
         - All values are in [-1, 1].
 
-    Example:
+    Examples:
         >>> from kenon.embeddings import TfidfEmbedder
         >>> emb = TfidfEmbedder()
         >>> corpus = ["cat mat", "dog ran"] * 3
@@ -174,7 +174,7 @@ def save_graph(
         - The file is written atomically (or as atomically as the format allows).
         - ``"graphml"`` and ``"gml"`` produce human-readable output.
 
-    Example:
+    Examples:
         >>> import tempfile, os, networkx as nx
         >>> g = nx.Graph(); g.add_edge("a", "b", weight=0.5)
         >>> with tempfile.NamedTemporaryFile(suffix=".graphml", delete=False) as f:
@@ -203,6 +203,11 @@ def load_graph(
 ) -> SemanticGraph:
     """Load a graph from disk.
 
+    Warning:
+        The ``"pickle"`` format executes arbitrary code on load and must
+        **never** be used with files from an untrusted source. Prefer
+        ``"graphml"`` or ``"gml"`` for any graph you did not write yourself.
+
     Args:
         path: Source file path.
         fmt: Format string. Must match the format used when saving.
@@ -217,7 +222,7 @@ def load_graph(
         - Loaded graph preserves all node and edge attributes from the original.
         - ``"pickle"`` format is not safe for untrusted files.
 
-    Example:
+    Examples:
         >>> import tempfile, networkx as nx
         >>> g = nx.Graph(); g.add_edge("x", "y", weight=0.9)
         >>> with tempfile.NamedTemporaryFile(suffix=".graphml", delete=False) as f:

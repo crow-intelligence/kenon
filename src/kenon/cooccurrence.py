@@ -45,7 +45,7 @@ def build_cooccurrence_graph(
         - All edge weights are positive.
         - Stopword filtering happens before counting.
 
-    Example:
+    Examples:
         >>> tokens = ["cat", "sat", "mat", "cat", "mat"]
         >>> g = build_cooccurrence_graph(tokens, window=1)
         >>> g.has_node("cat")
@@ -116,7 +116,7 @@ def detect_collocations(
         - Returns at most ``top_n`` tuples.
         - Each tuple has length ``n``.
 
-    Example:
+    Examples:
         >>> tokens = ["new", "york", "city", "new", "york", "times"] * 10
         >>> colls = detect_collocations(tokens, n=2, top_n=5)
         >>> ("new", "york") in colls

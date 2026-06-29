@@ -54,7 +54,7 @@ class CountVectorizerEmbedder:
         - ``vocabulary`` raises ``RuntimeError`` if accessed before ``fit``.
         - Output matrix dtype is always float64.
 
-    Example:
+    Examples:
         >>> emb = CountVectorizerEmbedder()
         >>> mat = emb.fit_transform(["the cat sat", "the dog ran"])
         >>> mat.shape[0]
@@ -136,7 +136,7 @@ class TfidfEmbedder:
         - ``vocabulary`` raises ``RuntimeError`` if accessed before ``fit``.
         - Output matrix dtype is always float64.
 
-    Example:
+    Examples:
         >>> emb = TfidfEmbedder()
         >>> mat = emb.fit_transform(["the cat sat", "the dog ran"])
         >>> mat.shape[0]
@@ -235,7 +235,7 @@ class PMIEmbedder:
           ``(len(vocabulary), n_components)``.
         - The embedder is serialisable via ``pickle``.
 
-    Example:
+    Examples:
         >>> emb = PMIEmbedder(n_components=50, window=3)
         >>> corpus = ["the cat sat on the mat", "the dog ran on the road"]
         >>> mat = emb.fit_transform(corpus)
