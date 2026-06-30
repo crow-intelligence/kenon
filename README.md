@@ -73,6 +73,10 @@ Planned for the next iteration. The robustness items are analysed in detail in
 - [ ] `kenon.paths` — a first-class concept-to-concept pathfinding helper (currently demonstrated via networkx in the tutorial).
 - [ ] Compare a text-derived network against human association norms — [Nelson norms](http://w3.usf.edu/FreeAssociation/) / [Small World of Words](https://smallworldofwords.org/) (needs external datasets).
 
+**Maintenance**
+
+- [ ] Refresh dependencies to current releases (chronowords 0.3.x, numpy 2.5, scipy 1.18, scikit-learn 1.9, pandas 3.0.3, spaCy 3.8.14). The chronowords bump is API-compatible; it's blocked on **chronowords adding Python 3.13 support** so a fresh `pip install kenon` resolves on 3.13 (chronowords currently caps `requires-python` at `<3.13`).
+
 ## Made by
 
 Kenon is made by [Crow Intelligence](https://crowintelligence.org/).
